@@ -40,15 +40,89 @@
 
 4.  **Install dependencies:**
     
-    Once the virtual environment is activated, install the project dependencies listed in your `pyproject.toml` file:
+    Once the virtual environment is activated, install the project dependencies:
+    
+    **Option 1: Using uv (if available):**
     ```bash
     uv pip sync pyproject.toml
     ```
-    Alternatively, for an editable install, you can use:
+    Alternatively, for an editable install:
     ```bash
     uv pip install -e .
     ```
-    Add your project's dependencies to the `[project.dependencies]` section in the `pyproject.toml` file.
+    
+    **Option 2: Using pip:**
+    ```bash
+    pip install -e .
+    ```
+    Or install dependencies directly:
+    ```bash
+    pip install litellm
+    ```
 
 Now you're ready to start working on the project!
+
+## Examples
+
+### Ollama Chat Example
+
+The `src/ollama-example.py` file demonstrates how to use LiteLLM to connect to an Ollama server running Gemma3 12b model for a chat application.
+
+**Prerequisites:**
+- Ollama server running (default: `http://localhost:11434`)
+- Gemma3:12b model available on the Ollama server
+
+**Configuration:**
+- **OLLAMA_BASE_URL**: Environment variable to set the Ollama server URL (default: `http://localhost:11434`)
+- **Model**: Configurable model name (default: `gemma3:12b`)
+
+**To run the example:**
+
+```bash
+# Using default settings
+python src/ollama-example.py
+
+# Using custom Ollama server URL
+OLLAMA_BASE_URL=http://your-server:11434 python src/ollama-example.py
+```
+
+**Features:**
+- Interactive chat interface with Gemma3 12b model
+- Configurable model name and server URL
+- Connection testing to Ollama server
+- Environment variable support for flexible deployment
+- Conversation history management
+- Error handling and graceful fallbacks
+- Clear troubleshooting instructions
+
+**Running from PyCharm:**
+1. Open the project in PyCharm
+2. Ensure the virtual environment is configured as the project interpreter
+3. Set environment variables if needed in Run Configuration
+4. Right-click on `src/ollama-example.py` and select "Run 'ollama-example'"
+5. Or use the green play button when the file is open
+
+The example will automatically test the connection to the Ollama server and provide helpful error messages if the connection fails.
+
+## Testing
+
+Run the unit tests to verify functionality:
+
+```bash
+# Install test dependencies
+pip install pytest pytest-mock
+
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test file
+python -m pytest tests/test_ollama_example.py -v
+```
+
+**Test Coverage:**
+- Configuration setup with environment variables
+- Connection testing
+- Chat functionality
+- Error handling
+- Model name configuration
 
