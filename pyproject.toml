@@ -1,0 +1,23 @@
+[project]
+name = "python-ai-playground"
+version = "0.1.0"
+description = "A playground for Python AI projects"
+authors = [
+    {name = "Your Name", email = "you@example.com"},
+]
+dependencies = [
+]
+requires-python = ">=3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
