@@ -88,12 +88,26 @@ OLLAMA_BASE_URL=http://your-server:11434 python src/ollama-example.py
 
 **Features:**
 - Interactive chat interface with Gemma3 12b model
+- **Tool calling functionality with task management**
 - Configurable model name and server URL
 - Connection testing to Ollama server
 - Environment variable support for flexible deployment
 - Conversation history management
 - Error handling and graceful fallbacks
 - Clear troubleshooting instructions
+
+**Tool Calling Features:**
+The example now includes tool calling capabilities that allow the AI model to:
+- Add tasks with names and descriptions
+- List all current tasks
+- Mark tasks as completed
+- Check if specific tasks exist
+
+You can interact with these tools by asking the AI to manage tasks, for example:
+- "Add a task called 'shopping' with description 'buy groceries'"
+- "List all my tasks"
+- "Mark the shopping task as done"
+- "Do I have a task called 'homework'?"
 
 **Running from PyCharm:**
 1. Open the project in PyCharm
@@ -117,12 +131,18 @@ python -m pytest tests/ -v
 
 # Run specific test file
 python -m pytest tests/test_ollama_example.py -v
+
+# Run integration test with real Ollama (requires running server)
+python tests/test_ollama_integration.py
 ```
 
 **Test Coverage:**
 - Configuration setup with environment variables
 - Connection testing
 - Chat functionality
+- Tool calling functionality
+- Task management
 - Error handling
+- Integration test with real Ollama server
 - Model name configuration
 
