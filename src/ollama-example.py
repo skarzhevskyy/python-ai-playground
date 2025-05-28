@@ -18,6 +18,8 @@ import sys
 from typing import List, Dict
 import litellm
 from litellm import completion
+import json
+from tools import TOOLS, execute_tool_call, add_task, has_task
 
 
 def setup_ollama_client(model_name: str = "gemma3:12b"):
@@ -64,7 +66,49 @@ def validate_connection(model_name: str = "ollama/gemma3:12b"):
         )
         print("✅ Connection to Ollama server successful!")
         print(f"🤖 Test response: {response.choices[0].message.content}")
+        
+        # Test tool calling functionality
+        print("\n🔧 Testing tool calling functionality...")
+        try:
+            # Add a validation task using direct function call
+            add_task("validate", "Tool calling validation test")
+            
+            # Test tool calling through the model
+            tool_test_response = completion(
+                model=model_name,
+                messages=[{"role": "user", "content": "Please add a task called 'test' with description 'Tool calling test' and then check if task 'validate' exists."}],
+                tools=TOOLS,
+                max_tokens=100,
+                temperature=0.7
+            )
+            
+            # Check if the model made tool calls
+            if tool_test_response.choices[0].message.tool_calls:
+                print("✅ Tool calling test successful!")
+                
+                # Execute any tool calls made by the model
+                for tool_call in tool_test_response.choices[0].message.tool_calls:
+                    function_name = tool_call.function.name
+                    arguments = json.loads(tool_call.function.arguments)
+                    result = execute_tool_call(function_name, arguments)
+                    print(f"🔧 Tool call result: {result}")
+                
+                # Verify the validation task exists
+                if has_task("validate"):
+                    print("✅ Tool validation successful - task verification passed!")
+                else:
+                    print("⚠️ Tool validation partial - task verification failed")
+                    
+            else:
+                print("⚠️ Tool calling test failed - model did not make tool calls")
+                print("📝 This may indicate the model doesn't support tool calling or needs different prompting")
+                
+        except Exception as tool_error:
+            print(f"⚠️ Tool calling test failed: {tool_error}")
+            print("📝 Tool calling validation failed, but basic connection works")
+        
         return True
+        
     except Exception as e:
         print(f"❌ Failed to connect to Ollama server: {e}")
         print("\n🔧 Troubleshooting:")
@@ -83,6 +127,8 @@ def chat_with_ollama(model_name: str = "ollama/gemma3:12b"):
     """
     print(f"\n🚀 Starting chat with {model_name}...")
     print("Type 'quit', 'exit', or 'bye' to end the conversation")
+    print("🔧 Tool calling enabled - you can ask me to manage tasks!")
+    print("   Example: 'Add a task called shopping with description buy groceries'")
     print("-" * 50)
     
     # Store conversation history
@@ -107,21 +153,62 @@ def chat_with_ollama(model_name: str = "ollama/gemma3:12b"):
             
             print("🤖 Gemma3: ", end="", flush=True)
             
-            # Get response from Ollama
+            # Get response from Ollama with tool calling support
             response = completion(
                 model=model_name,
                 messages=conversation_history,
+                tools=TOOLS,
                 max_tokens=500,
                 temperature=0.7,
                 stream=False  # Set to True for streaming responses
             )
             
-            # Extract and display the response
-            assistant_message = response.choices[0].message.content
-            print(assistant_message)
-            
-            # Add assistant response to history
-            conversation_history.append({"role": "assistant", "content": assistant_message})
+            # Check if the model made tool calls
+            if response.choices[0].message.tool_calls:
+                print("\n🔧 Executing tool calls...")
+                
+                # Add the assistant's message with tool calls to history
+                conversation_history.append(response.choices[0].message)
+                
+                # Execute each tool call
+                for tool_call in response.choices[0].message.tool_calls:
+                    function_name = tool_call.function.name
+                    arguments = json.loads(tool_call.function.arguments)
+                    
+                    print(f"📞 Calling {function_name} with arguments: {arguments}")
+                    result = execute_tool_call(function_name, arguments)
+                    print(f"📋 Result: {result}")
+                    
+                    # Add tool result to conversation history
+                    conversation_history.append({
+                        "role": "tool",
+                        "content": result,
+                        "tool_call_id": tool_call.id
+                    })
+                
+                # Get final response from model with tool results
+                final_response = completion(
+                    model=model_name,
+                    messages=conversation_history,
+                    tools=TOOLS,
+                    max_tokens=500,
+                    temperature=0.7,
+                    stream=False
+                )
+                
+                assistant_message = final_response.choices[0].message.content
+                print(f"\n🤖 {assistant_message}")
+                
+                # Add final assistant response to history
+                conversation_history.append({"role": "assistant", "content": assistant_message})
+                
+            else:
+                # Regular response without tool calls
+                assistant_message = response.choices[0].message.content
+                print(assistant_message)
+                
+                # Add assistant response to history
+                conversation_history.append({"role": "assistant", "content": assistant_message})
             
         except KeyboardInterrupt:
             print("\n\n👋 Chat interrupted. Goodbye!")
