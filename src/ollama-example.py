@@ -22,7 +22,7 @@ import json
 from tools import TOOLS, execute_tool_call, add_task, has_task
 
 
-def setup_ollama_client(model_name: str = "gemma3:12b"):
+def setup_ollama_client(model_name: str):
     """Configure LiteLLM for Ollama
     
     Args:
@@ -50,7 +50,7 @@ def setup_ollama_client(model_name: str = "gemma3:12b"):
     return api_base, full_model_name
 
 
-def validate_connection(model_name: str = "ollama/gemma3:12b"):
+def validate_connection(model_name: str):
     """Test connection to Ollama server
     
     Args:
@@ -151,7 +151,7 @@ def chat_with_ollama(model_name: str = "ollama/gemma3:12b"):
             # Add user message to history
             conversation_history.append({"role": "user", "content": user_input})
             
-            print("🤖 Gemma3: ", end="", flush=True)
+            print("🤖 AI: ", end="", flush=True)
             
             # Get response from Ollama with tool calling support
             response = completion(
@@ -175,15 +175,16 @@ def chat_with_ollama(model_name: str = "ollama/gemma3:12b"):
                     function_name = tool_call.function.name
                     arguments = json.loads(tool_call.function.arguments)
                     
-                    print(f"📞 Calling {function_name} with arguments: {arguments}")
+                    print(f"📞 Calling '{function_name}' with arguments: {arguments}")
                     result = execute_tool_call(function_name, arguments)
-                    print(f"📋 Result: {result}")
-                    
+                    print(f"📋 Result (Type: {type(result).__name__}) : {result}")
+
                     # Add tool result to conversation history
                     conversation_history.append({
                         "role": "tool",
                         "content": result,
-                        "tool_call_id": tool_call.id
+                        "tool_call_id": tool_call.id,
+                        "name": function_name
                     })
                 
                 # Get final response from model with tool results
@@ -222,9 +223,15 @@ def main():
     """Main function"""
     print("🌟 Ollama Chat Example with LiteLLM")
     print("=" * 40)
-    
+
+    model_name: str
+    model_name = "gemma3:12b"
+    #model_name = "qwen3:14b"
+    #model_name = "mistral-nemo:12b"
+    #model_name = "granite3.2:8b"
+
     # Setup the client and get configuration
-    api_base, full_model_name = setup_ollama_client()
+    api_base, full_model_name = setup_ollama_client(model_name)
     
     # Test connection
     if not validate_connection(full_model_name):

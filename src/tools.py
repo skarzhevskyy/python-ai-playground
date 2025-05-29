@@ -24,12 +24,13 @@ def add_task(name: str, description: str) -> str:
     Returns:
         Success message
     """
+    print(f"    🐞 - add task '{name}'")
     _tasks[name] = {
         "name": name,
         "description": description,
         "completed": False
     }
-    return f"Task '{name}' added successfully."
+    return f"Task '{name}' added successfully. Task description is: {description}"
 
 
 def list_tasks() -> str:
@@ -74,7 +75,9 @@ def has_task(name: str) -> bool:
     Returns:
         True if task exists, False otherwise
     """
-    return name in _tasks
+    task_exists : bool = name in _tasks
+    print(f"    🐞 - task '{name}' exists {task_exists}")
+    return task_exists
 
 
 # Tool definitions for LiteLLM
