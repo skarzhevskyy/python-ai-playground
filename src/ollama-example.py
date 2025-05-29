@@ -167,8 +167,9 @@ def chat_with_ollama(model_name: str = "ollama/gemma3:12b"):
             if response.choices[0].message.tool_calls:
                 print("\n🔧 Executing tool calls...")
                 
-                # Add the assistant's message with tool calls to history
-                conversation_history.append(response.choices[0].message)
+                # Add the assistant's message with tool calls to history (convert to dict)
+                assistant_message = response.choices[0].message
+                conversation_history.append(assistant_message.model_dump())
                 
                 # Execute each tool call
                 for tool_call in response.choices[0].message.tool_calls:
@@ -182,8 +183,8 @@ def chat_with_ollama(model_name: str = "ollama/gemma3:12b"):
                     # Add tool result to conversation history
                     conversation_history.append({
                         "role": "tool",
-                        "content": result,
-                        "tool_call_id": tool_call.id,
+                        "content": str(result),  # Ensure result is a string
+                        "tool_call_id": str(tool_call.id),  # Ensure tool_call_id is a string
                         "name": function_name
                     })
                 
